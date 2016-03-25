@@ -1,0 +1,10 @@
+lastUpgrade=00932
+proj.pluginVersion=0.9.32
+proj.AppId=760396771088
+and.BundleId=com.beachhead.skylanders.battlecast.main
+proj.classDir=Assets
+proj.ConstantsClassName=FPAuth.GPAuth
+and.ResourceData=%3c%3fxml+version%3d%221.0%22+encoding%3d%22utf-8%22%3f%3e%0a%3c%21--%0aGoogle+Play+game+services+IDs.%0aSave+this+file+as+res%2fvalues%2fgames-ids.xml+in+your+project.%0a--%3e%0a%3cresources%3e%0a++%3cstring+name%3d%22app_id%22%3e760396771088%3c%2fstring%3e%0a++%3cstring+name%3d%22package_name%22%3ecom.beachhead.skylanders.battlecast.main%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_1%22%3eCgkIkN632ZAWEAIQBg%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_2%22%3eCgkIkN632ZAWEAIQBw%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_3%22%3eCgkIkN632ZAWEAIQCA%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_4%22%3eCgkIkN632ZAWEAIQCQ%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_5%22%3eCgkIkN632ZAWEAIQCg%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_add_a_card_to_your_collection%22%3eCgkIkN632ZAWEAIQDg%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_buy_a_level_on_a_card%22%3eCgkIkN632ZAWEAIQDw%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_win_a_game_with_a_deck_you_built%22%3eCgkIkN632ZAWEAIQEA%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_use_a_super_spin%22%3eCgkIkN632ZAWEAIQEQ%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_complete_a_realm%22%3eCgkIkN632ZAWEAIQEg%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_open_an_ultimate_card%22%3eCgkIkN632ZAWEAIQEw%3c%2fstring%3e%0a%3c%2fresources%3e%0a
+and.ClientId=
+proj.requireGPlus=false
+android.SetupDone=true
