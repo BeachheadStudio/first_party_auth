@@ -27,3 +27,9 @@ sysinfo.txt
 # JetBrains
 .idea/
 first_party_auth.sln.iml
+
+# OSX
+.DS_Store
+
+# Generated plugins
+Assets/Plugins/Android/Amazon/
