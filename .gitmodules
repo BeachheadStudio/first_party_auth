@@ -1,0 +1,3 @@
+[submodule "AmazonAuth"]
+	path = AmazonAuth
+	url = git@github.com:BeachheadStudio/AmazonAuth.git
