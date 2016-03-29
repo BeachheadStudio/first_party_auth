@@ -5,6 +5,17 @@ namespace FPAuth
 {
     public abstract class AAuthManager : IAuthManager
     {
+        // log level enum
+        public enum LogLevel
+        {
+            VERBOSE,
+            DEBUG,
+            INFO,
+            WARN,
+            ERROR,
+            ASSERT
+        }
+
         // event handlers
         public static event Action FirstPartyAuthSuccess;
         public static event Action<string> FirstPartyAuthFailure;
@@ -51,11 +62,28 @@ namespace FPAuth
         protected string playerName;
         protected string firstPartyPlayerId;
         protected string playerId;
-        protected Dictionary<string, string> serverCreds;
+        protected Dictionary<string, string> serverCreds = new Dictionary<string, string>();
 
         // methods
-        public virtual void Start()
+        public virtual void Init()
         {
+        }
+
+        public virtual void OnPause()
+        {
+        }
+
+        public virtual void OnResume()
+        {
+        }
+
+        public virtual string FailureError()
+        {
+            return null;
+        }
+
+        public virtual void Log(AAuthManager.LogLevel level, string message)
+        {   
         }
 
         public string PlayerName()
@@ -78,44 +106,53 @@ namespace FPAuth
             return new Dictionary<string, string>();
         }
 
-        protected void FireFirstPartySuccess()
+        public virtual void FireFirstPartyAuthSuccess()
         {
+            mStatus = Status.FirstPartySuccess;
+
             if (FirstPartyAuthSuccess != null)
             {
                 FirstPartyAuthSuccess();
             }
+            ClearFirstPartyEvents();
         }
 
-        protected void FireFirstPartyFailure(string error)
+        public void FireFirstPartyAuthFailure(string error)
         {
+            mStatus = Status.FirstPartyFailure;
             if (FirstPartyAuthFailure != null)
             {
                 FirstPartyAuthFailure(error);
             }
+            ClearFirstPartyEvents();
         }
 
-        protected void FireFirstPartyAuthCancel()
+        public void FireFirstPartyAuthCancel()
         {
+            mStatus = Status.FirstPartyFailure;
             if (FirstPartyAuthCancel != null)
             {
                 FirstPartyAuthCancel();
             }
+            ClearFirstPartyEvents();
         }
 
-        protected void FireServerAuthSuccess()
+        public void FireServerAuthSuccess()
         {
             if (ServerAuthSuccess != null)
             {
                 ServerAuthSuccess();
             }
+            ClearServerEvents();
         }
 
-        protected void FireServerAuthFailure(string error)
+        public void FireServerAuthFailure(string error)
         {
             if (ServerAuthFailure != null)
             {
                 ServerAuthFailure(error);
             }
+            ClearServerEvents();
         }
 
         protected void ClearFirstPartyEvents()

@@ -33,3 +33,4 @@ first_party_auth.sln.iml
 
 # Generated plugins
 Assets/Plugins/Android/Amazon/
+Assets/Plugins/Android/assets/

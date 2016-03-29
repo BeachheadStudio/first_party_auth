@@ -5,7 +5,7 @@ namespace FPAuth
 {
     public interface IAuthManager
     {
-        void Start();
+        void Init();
 
         string PlayerName();
 
@@ -13,6 +13,14 @@ namespace FPAuth
 
         string FirstPartyPlayerId();
 
+        string FailureError();
+
         Dictionary<string, string> ServerCreds();
+
+        void OnPause();
+
+        void OnResume();
+
+        void Log(AAuthManager.LogLevel level, string message);
     }
 }

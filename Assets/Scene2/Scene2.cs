@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using FPAuth;
 
-public class Scene1 : MonoBehaviour
+public class Scene2 : MonoBehaviour
 {
     public Text header;
     public Button changeScene;
@@ -36,8 +36,8 @@ public class Scene1 : MonoBehaviour
         }
     }
 
-    public void OnChangeScenePress()
+    void OnChangeScenePress()
     {
-        SceneManager.LoadScene("Scene2");
+        SceneManager.LoadScene("Scene1");
     }
 }
