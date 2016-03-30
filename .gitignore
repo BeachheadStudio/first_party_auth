@@ -34,3 +34,9 @@ first_party_auth.sln.iml
 # Generated plugins
 Assets/Plugins/Android/Amazon/
 Assets/Plugins/Android/assets/
+Assets/Plugins/Android/GooglePlay/
+Assets/Plugins/Android/GooglePlay.meta
+Assets/Plugins/Android/play-services*.aar
+Assets/Plugins/Android/play-services*.aar.meta
+Assets/Plugins/Android/appcompat*.aar
+Assets/Plugins/Android/appcompat*.aar.meta

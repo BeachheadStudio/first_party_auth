@@ -13,6 +13,7 @@ public class Scene1 : MonoBehaviour
     void Start()
     {
         changeScene.gameObject.SetActive(false);
+        changeScene.onClick.AddListener(OnChangeScenePress);
     }
 
     void Update()

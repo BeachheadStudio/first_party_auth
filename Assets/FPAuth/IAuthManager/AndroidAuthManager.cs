@@ -16,10 +16,11 @@ namespace FPAuth
         public override void Init()
         {
             Log(LogLevel.DEBUG, "starting...");
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.googleplayauth.AuthService"))
+
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
-                authService.Call("init", true, false, false);
+                authService.Call("init");
                 mStatus = Status.FirstPartyWorking;
             }
         }
@@ -28,7 +29,7 @@ namespace FPAuth
         {
             Log(LogLevel.DEBUG, "OnPause");
 
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.googleplayauth.AuthService"))
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
                 authService.Call("onPause");
@@ -39,7 +40,7 @@ namespace FPAuth
         {
             Log(LogLevel.DEBUG, "OnResume");
 
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.googleplayauth.AuthService"))
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
                 authService.Call("onResume");
@@ -49,7 +50,7 @@ namespace FPAuth
         public override string FailureError()
         {
             Log(LogLevel.ERROR, "FailureError");
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.googleplayauth.AuthService"))
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
                 return authService.Call<string>("getFailureError");
@@ -63,22 +64,22 @@ namespace FPAuth
                 switch (level)
                 {
                     case LogLevel.DEBUG:
-                        logger.CallStatic<int>("d", "googleplayauthManager", message);
+                        logger.CallStatic<int>("d", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.VERBOSE:
-                        logger.CallStatic<int>("v", "googleplayauthManager", message);
+                        logger.CallStatic<int>("v", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.INFO:
-                        logger.CallStatic<int>("i", "googleplayauthManager", message);
+                        logger.CallStatic<int>("i", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.WARN:
-                        logger.CallStatic<int>("w", "googleplayauthManager", message);
+                        logger.CallStatic<int>("w", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.ERROR:
-                        logger.CallStatic<int>("e", "googleplayauthManager", message);
+                        logger.CallStatic<int>("e", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.ASSERT:
-                        logger.CallStatic<int>("a", "googleplayauthManager", message);
+                        logger.CallStatic<int>("a", "GooglePlayAuthManager", message);
                         break;
                 }
             }
@@ -86,7 +87,7 @@ namespace FPAuth
 
         public override void FireFirstPartyAuthSuccess()
         {
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.googleplayauth.AuthService"))
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
                 isAnonymous = authService.Call<bool>("isAnonymous");

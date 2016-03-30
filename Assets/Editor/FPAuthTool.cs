@@ -12,12 +12,21 @@ namespace FPAuth
     {
         public static readonly string AMAZON_BUILD_DIR = "AmazonAuth/Assets/Plugins/Android/Amazon";
         public static readonly string AMAZON_PLUGIN_DIR = "Assets/Plugins/Android/Amazon";
+        public static readonly string ANDROID_BASE_DIR = "Assets/Plugins/Android";
+        public static readonly string ANDROID_BUILD_BASE_DIR = "AndroidAuth/Assets/Plugins/Android";
         public static readonly string[] DEFINE_SYMBOLS = new string[]
         {
-            "DEVELOPER_TOOLS", "KINDLE_BUILD", "NO_GPGS"    
+            "DEVELOPER_TOOLS", "KINDLE_BUILD" 
         };
-
-        //        private event BuildFinishedDelegate BuildFinishedEvent;
+        public static readonly string PLAY_VERSION = "8.4.0";
+        public static readonly string[] PLAY_AARS = new string[]
+        {
+            "play-services-auth-{0}.aar",
+            "play-services-base-{0}.aar",
+            "play-services-basement-{0}.aar",
+            "play-services-games-{0}.aar",
+            "play-services-plus-{0}.aar"
+        };
 
         private Process process = null;
 
@@ -27,6 +36,8 @@ namespace FPAuth
         bool debugBuild;
         Platform platform = Platform.None;
         string outputLocation;
+        bool buildPlugins;
+        string androidAppId;
 
         public enum Platform
         {
@@ -39,7 +50,9 @@ namespace FPAuth
         [MenuItem("Window/FPAuth")]
         public static void  ShowWindow()
         {
-            EditorWindow.GetWindow(typeof(FPAuthTool));
+            EditorWindow window = EditorWindow.GetWindow(typeof(FPAuthTool));
+            window.maxSize = new Vector2(500f, 500f);
+            window.minSize = window.maxSize;
         }
 
         void OnDestroy()
@@ -69,10 +82,12 @@ namespace FPAuth
             GUILayout.Label("FPAuthTool Settings", EditorStyles.boldLabel);
             bundleId = EditorGUILayout.TextField("Bundle Identifier", bundleId);
             androidHome = EditorGUILayout.TextField("Android SDK Location", androidHome);
+            androidAppId = EditorGUILayout.TextField("Android App ID", androidAppId);
             amazonAPIKey = EditorGUILayout.TextField("Amazon API Key", amazonAPIKey, GUILayout.Height(200));
+            buildPlugins = EditorGUILayout.Toggle("Build plugins from src", buildPlugins);
 
             EditorGUILayout.Space();
-            GUILayout.BeginArea(new Rect(153, 270, 200, 100));
+            GUILayout.BeginArea(new Rect(153, 310, 200, 100));
             if (GUILayout.Button("Setup", GUILayout.Width(200)))
             {
                 if (string.IsNullOrEmpty(bundleId) || string.IsNullOrEmpty(androidHome) ||
@@ -112,7 +127,7 @@ namespace FPAuth
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-            GUILayout.BeginArea(new Rect(153, 353, 200, 100));
+            GUILayout.BeginArea(new Rect(153, 393, 200, 100));
             if (GUILayout.Button("Build", GUILayout.Width(200)) && platform != Platform.None && !string.IsNullOrEmpty(outputLocation))
             {
                 BuildGame(platform);
@@ -126,13 +141,17 @@ namespace FPAuth
             UnityEngine.Debug.Log("Starting...");
 
             BuildAmazonPlugin();
+            BuildAndroidPlugin();
 
             UnityEngine.Debug.Log("Finished!");
         }
 
         private void BuildAmazonPlugin()
         {
-            RunCommand(Application.dataPath + "/../AmazonAuth/gradlew", "AmazonAuth/", "makeUnityPlugin");
+            if (buildPlugins)
+            {
+                RunCommand(Application.dataPath + "/../AmazonAuth/gradlew", "AmazonAuth/", "makeUnityPlugin");
+            }
 
             if (Directory.Exists(AMAZON_PLUGIN_DIR))
             {
@@ -166,6 +185,54 @@ namespace FPAuth
             StreamWriter sw = File.CreateText(apiKeyFilename);
             sw.Write(amazonAPIKey);
             sw.Close();
+        }
+
+        private void BuildAndroidPlugin()
+        {
+            if (buildPlugins)
+            {
+                RunCommand(Application.dataPath + "/../AndroidAuth/gradlew", "AndroidAuth/", "makeUnityPlugin");
+            }
+
+            if (!Directory.Exists(ANDROID_BASE_DIR))
+            {
+                Directory.CreateDirectory(ANDROID_BASE_DIR);
+            }
+
+            // clean out old files
+            if (Directory.Exists(ANDROID_BASE_DIR + "/GooglePlay"))
+            {
+                Directory.Delete(ANDROID_BASE_DIR + "/GooglePlay", true);
+            }
+            Directory.CreateDirectory(ANDROID_BASE_DIR + "/GooglePlay");
+
+            foreach (string filename in PLAY_AARS)
+            {
+                FileUtil.DeleteFileOrDirectory(ANDROID_BASE_DIR + "/" + string.Format(filename, PLAY_VERSION));
+            }
+
+            FileUtil.DeleteFileOrDirectory(ANDROID_BASE_DIR + "/appcompat-v7-23.2.1.aar");
+
+            DirectoryCopy(ANDROID_BUILD_BASE_DIR, ANDROID_BASE_DIR);
+
+            // Add app id to the manifest
+            // <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="\ YOUR_APP_ID"/>
+            XmlDocument doc = new XmlDocument();
+            doc.Load(ANDROID_BASE_DIR + "/GooglePlay/AndroidManifest.xml");
+
+            XmlNodeList nodes = doc.SelectNodes("manifest/application/meta-data");
+
+            foreach (XmlNode node in nodes)
+            {
+                XmlAttribute nodeName = node.Attributes["android:name"];
+                if (nodeName.Value == "com.google.android.gms.games.APP_ID")
+                {
+                    XmlAttribute nodeValue = node.Attributes["android:value"];
+                    nodeValue.Value = string.Format("\\ {0}", androidAppId);
+                    doc.Save(ANDROID_BASE_DIR + "/GooglePlay/AndroidManifest.xml");
+                    break;
+                }
+            }
         }
 
         private void DirectoryCopy(string sourceDirName, string destDirName)
@@ -298,6 +365,16 @@ namespace FPAuth
             {
                 outputLocation = EditorPrefs.GetString("FPAuthTool.outputLocation");
             }
+
+            if (EditorPrefs.HasKey("FPAuthTool.buildPlugins"))
+            {
+                buildPlugins = EditorPrefs.GetBool("FPAuthTool.buildPlugins");
+            }
+
+            if (androidAppId == null && EditorPrefs.HasKey("FPAuthTool.androidAppId"))
+            {
+                androidAppId = EditorPrefs.GetString("FPAuthTool.androidAppId");
+            }
         }
 
         public void OnDisable()
@@ -327,6 +404,13 @@ namespace FPAuth
             if (outputLocation != null)
             {
                 EditorPrefs.SetString("FPAuthTool.outputLocation", outputLocation);
+            }
+
+            EditorPrefs.SetBool("FPAuthTool.buildPlugins", buildPlugins);
+
+            if (androidAppId != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.androidAppId", androidAppId);
             }
         }
 
