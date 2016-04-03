@@ -4,3 +4,9 @@
 [submodule "AndroidAuth"]
 	path = AndroidAuth
 	url = git@github.com:BeachheadStudio/AndroidAuth.git
+[submodule "iOSAuth"]
+	path = iOSAuth
+	url = git@github.com:BeachheadStudio/iOSAuth.git
+[submodule "authServer"]
+	path = authServer
+	url = git@github.com:BeachheadStudio/authServer.git
