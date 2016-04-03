@@ -23,7 +23,7 @@ namespace FPAuth
         private static void Init()
         {
 #if UNITY_IOS  
-            // return
+            instance = new iOSAuthManager();
 #elif UNITY_ANDROID && !KINDLE_BUILD
             instance = new AndroidAuthManager();
 #elif KINDLE_BUILD

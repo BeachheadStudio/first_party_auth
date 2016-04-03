@@ -15,7 +15,7 @@ namespace FPAuth
 
         string FailureError();
 
-        Dictionary<string, string> ServerCreds();
+        string SessionToken();
 
         void OnPause();
 

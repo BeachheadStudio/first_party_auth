@@ -1,9 +1,9 @@
-﻿#if UNITY_ANDROID && !KINDLE_BUILD
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
 using UnityEngine.SocialPlatforms;
 
+#if UNITY_ANDROID && !KINDLE_BUILD
 namespace FPAuth
 {
     public class AndroidAuthManager : AAuthManager
@@ -85,8 +85,16 @@ namespace FPAuth
             }
         }
 
+        public override string SessionToken()
+        {
+            return "";
+        }
+
         public override void FireFirstPartyAuthSuccess()
         {
+            bool isAnonymous;
+            string firstPartyPlayerId = "", playerName = "", oauthToken = "";
+
             using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
@@ -96,13 +104,12 @@ namespace FPAuth
                 {
                     firstPartyPlayerId = authService.Call<string>("getPlayerId");
                     playerName = authService.Call<string>("getPlayerName");
-                    serverCreds.Add("oauth_token", authService.Call<string>("getOauthToken"));
+                    oauthToken = authService.Call<string>("getOauthToken");
                 }
             }
 
-            string empty;
             Log(LogLevel.DEBUG, string.Format("isAnonymous {0} firstPartyPlayerId {1} playerName {2} oauthToken {3}",
-                    isAnonymous, firstPartyPlayerId, playerName, serverCreds.TryGetValue("oauth_token", out empty)));
+                    isAnonymous, firstPartyPlayerId, playerName, oauthToken));
 
             base.FireFirstPartyAuthSuccess();
         }

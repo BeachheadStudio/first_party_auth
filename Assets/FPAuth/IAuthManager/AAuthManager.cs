@@ -24,22 +24,6 @@ namespace FPAuth
         public static event Action<string> ServerAuthFailure;
 
         // parameters
-        protected bool isAnonymous = true;
-
-        public bool IsAnonymous
-        {
-            get { return isAnonymous; }
-            set { }
-        }
-
-        protected bool isAuthed = false;
-
-        public bool IsAuthed
-        {
-            get { return isAuthed; }
-            set { }
-        }
-
         public enum Status
         {
             Init,
@@ -58,11 +42,6 @@ namespace FPAuth
             get { return mStatus; }
             set { }
         }
-
-        protected string playerName;
-        protected string firstPartyPlayerId;
-        protected string playerId;
-        protected Dictionary<string, string> serverCreds = new Dictionary<string, string>();
 
         // methods
         public virtual void Init()
@@ -86,24 +65,24 @@ namespace FPAuth
         {   
         }
 
-        public string PlayerName()
+        public virtual string PlayerName()
         {
-            return playerName;
+            return null;
         }
 
-        public string PlayerId()
+        public virtual string PlayerId()
         {
-            return playerId;
+            return null;
         }
 
-        public string FirstPartyPlayerId()
+        public virtual string FirstPartyPlayerId()
         {
-            return firstPartyPlayerId;
+            return null;
         }
 
-        public Dictionary<string, string> ServerCreds()
+        public virtual string SessionToken()
         {
-            return new Dictionary<string, string>();
+            return null;
         }
 
         public virtual void FireFirstPartyAuthSuccess()

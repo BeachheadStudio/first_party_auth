@@ -14,6 +14,9 @@ namespace FPAuth
         public static readonly string AMAZON_PLUGIN_DIR = "Assets/Plugins/Android/Amazon";
         public static readonly string ANDROID_BASE_DIR = "Assets/Plugins/Android";
         public static readonly string ANDROID_BUILD_BASE_DIR = "AndroidAuth/Assets/Plugins/Android";
+        public static readonly string IOS_BUILD_DIR = "iOSAuth/iOSAuth";
+        public static readonly string IOS_PLUGIN_DIR = "Assets/Plugins/iOS/iOSAuth";
+
         public static readonly string[] DEFINE_SYMBOLS = new string[]
         {
             "DEVELOPER_TOOLS", "KINDLE_BUILD" 
@@ -142,6 +145,7 @@ namespace FPAuth
 
             BuildAmazonPlugin();
             BuildAndroidPlugin();
+            BuildiOSPlugin();
 
             UnityEngine.Debug.Log("Finished!");
         }
@@ -235,6 +239,18 @@ namespace FPAuth
             }
         }
 
+        private void BuildiOSPlugin()
+        {
+            if (Directory.Exists(IOS_PLUGIN_DIR))
+            {
+                Directory.Delete(IOS_PLUGIN_DIR, true);
+            }
+            Directory.CreateDirectory(IOS_PLUGIN_DIR);
+
+            DirectoryCopy(IOS_BUILD_DIR + "/Auth", IOS_PLUGIN_DIR);
+            DirectoryCopy(IOS_BUILD_DIR + "/Unity", IOS_PLUGIN_DIR);
+        }
+
         private void DirectoryCopy(string sourceDirName, string destDirName)
         {
             if (!Directory.Exists(destDirName))
@@ -303,6 +319,8 @@ namespace FPAuth
             UnityEngine.Debug.ClearDeveloperConsole();
             UnityEngine.Debug.Log("Starting...");
 
+            PlayerSettings.bundleIdentifier = bundleId;
+
             string[] scenes = new string[]
             { 
                 Application.dataPath + "/Scene1/Scene1.unity", 
@@ -319,7 +337,7 @@ namespace FPAuth
             switch (platform)
             {
                 case Platform.iOS:
-                    AddDefineSymbol(DEFINE_SYMBOLS[2], platform);
+                    
                     break;
                 case Platform.Android:
                     
@@ -330,6 +348,8 @@ namespace FPAuth
             }
 
             BuildPlayer(scenes, platform);
+
+            PlayerSettings.bundleIdentifier = "";
 
             UnityEngine.Debug.Log("Finished!");
         }
