@@ -1,10 +1,26 @@
 ﻿using System;
+using System.IO;
+using UnityEngine;
 
 namespace FPAuth
 {
     public class AuthInstance
     {
+        [Serializable]
+        public class AuthSettings
+        {
+            public string clientId;
+            public string authServerUrl;
+        }
+
         private static AAuthManager instance = null;
+        private static AuthSettings settings = null;
+
+        public static AuthSettings Settings
+        {
+            get { return settings; }
+            set { }
+        }
 
         public static AAuthManager Instance
         {
@@ -28,6 +44,13 @@ namespace FPAuth
             instance = new AndroidAuthManager();
 #elif KINDLE_BUILD
             instance = new AmazonAuthManager();
+#endif
+
+#if UNITY_ANDROID && !KINDLE_BUILD
+            // grab settings from disk
+            string settingsFilename = "authSettings";
+            TextAsset jsonAsset = Resources.Load<TextAsset>(settingsFilename);
+            settings = JsonUtility.FromJson<AuthSettings>(jsonAsset.text);
 #endif
         }
 

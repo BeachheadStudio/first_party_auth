@@ -20,7 +20,7 @@ namespace FPAuth
             using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
-                authService.Call("init");
+                authService.Call("init", AuthInstance.Settings.clientId, AuthInstance.Settings.authServerUrl);
                 mStatus = Status.FirstPartyWorking;
             }
         }
@@ -87,7 +87,38 @@ namespace FPAuth
 
         public override string SessionToken()
         {
-            return "";
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
+            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                return authService.Call<string>("getSessionToken");
+            }
+        }
+
+        public override string PlayerName()
+        {
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
+            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                return authService.Call<string>("getPlayerName");
+            }
+        }
+
+        public override string PlayerId()
+        {
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
+            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                return authService.Call<string>("getServerPlayerId");
+            }
+        }
+
+        public override string FirstPartyPlayerId()
+        {
+            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
+            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                return authService.Call<string>("getPlayerId");
+            }
         }
 
         public override void FireFirstPartyAuthSuccess()
@@ -104,11 +135,11 @@ namespace FPAuth
                 {
                     firstPartyPlayerId = authService.Call<string>("getPlayerId");
                     playerName = authService.Call<string>("getPlayerName");
-                    oauthToken = authService.Call<string>("getOauthToken");
+                    oauthToken = authService.Call<string>("getSessionToken");
                 }
             }
 
-            Log(LogLevel.DEBUG, string.Format("isAnonymous {0} firstPartyPlayerId {1} playerName {2} oauthToken {3}",
+            Log(LogLevel.DEBUG, string.Format("isAnonymous {0} firstPartyPlayerId {1} playerName {2} sessionToken {3}",
                     isAnonymous, firstPartyPlayerId, playerName, oauthToken));
 
             base.FireFirstPartyAuthSuccess();

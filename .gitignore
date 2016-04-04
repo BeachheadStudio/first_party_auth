@@ -41,3 +41,5 @@ Assets/Plugins/Android/play-services*.aar.meta
 Assets/Plugins/Android/appcompat*.aar
 Assets/Plugins/Android/appcompat*.aar.meta
 Assets/Plugins/iOS/iOSAuth/
+Assets/Resources/authSettings.json
+Assets/Resources/authSettings.json.meta

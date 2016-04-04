@@ -41,6 +41,8 @@ namespace FPAuth
         string outputLocation;
         bool buildPlugins;
         string androidAppId;
+        string androidClientId;
+        string authServerUrl;
 
         public enum Platform
         {
@@ -86,15 +88,18 @@ namespace FPAuth
             bundleId = EditorGUILayout.TextField("Bundle Identifier", bundleId);
             androidHome = EditorGUILayout.TextField("Android SDK Location", androidHome);
             androidAppId = EditorGUILayout.TextField("Android App ID", androidAppId);
+            androidClientId = EditorGUILayout.TextField("Android Client ID", androidClientId);
+            authServerUrl = EditorGUILayout.TextField("Auth Server Url", authServerUrl);
             amazonAPIKey = EditorGUILayout.TextField("Amazon API Key", amazonAPIKey, GUILayout.Height(200));
             buildPlugins = EditorGUILayout.Toggle("Build plugins from src", buildPlugins);
 
             EditorGUILayout.Space();
-            GUILayout.BeginArea(new Rect(153, 310, 200, 100));
+            GUILayout.BeginArea(new Rect(153, 338, 200, 100));
             if (GUILayout.Button("Setup", GUILayout.Width(200)))
             {
                 if (string.IsNullOrEmpty(bundleId) || string.IsNullOrEmpty(androidHome) ||
-                    string.IsNullOrEmpty(amazonAPIKey))
+                    string.IsNullOrEmpty(amazonAPIKey) || string.IsNullOrEmpty(androidClientId) ||
+                    string.IsNullOrEmpty(authServerUrl))
                 {
                     UnityEngine.Debug.Log("All input values have to be set");
                 }
@@ -130,7 +135,7 @@ namespace FPAuth
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-            GUILayout.BeginArea(new Rect(153, 393, 200, 100));
+            GUILayout.BeginArea(new Rect(153, 430, 200, 100));
             if (GUILayout.Button("Build", GUILayout.Width(200)) && platform != Platform.None && !string.IsNullOrEmpty(outputLocation))
             {
                 BuildGame(platform);
@@ -146,6 +151,7 @@ namespace FPAuth
             BuildAmazonPlugin();
             BuildAndroidPlugin();
             BuildiOSPlugin();
+            SaveSettings();
 
             UnityEngine.Debug.Log("Finished!");
         }
@@ -395,6 +401,16 @@ namespace FPAuth
             {
                 androidAppId = EditorPrefs.GetString("FPAuthTool.androidAppId");
             }
+
+            if (androidClientId == null && EditorPrefs.HasKey("FPAuthTool.androidClientId"))
+            {
+                androidClientId = EditorPrefs.GetString("FPAuthTool.androidClientId");
+            }
+
+            if (authServerUrl == null && EditorPrefs.HasKey("FPAuthTool.authServerUrl"))
+            {
+                authServerUrl = EditorPrefs.GetString("FPAuthTool.authServerUrl");
+            }
         }
 
         public void OnDisable()
@@ -431,6 +447,16 @@ namespace FPAuth
             if (androidAppId != null)
             {
                 EditorPrefs.SetString("FPAuthTool.androidAppId", androidAppId);
+            }
+
+            if (androidClientId != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.androidClientId", androidClientId);
+            }
+
+            if (authServerUrl != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.authServerUrl", authServerUrl);
             }
         }
 
@@ -566,6 +592,24 @@ namespace FPAuth
                     EditorUtility.DisplayDialog("Build Complete", "Build has been completed successfully.", "Close");
                 }
             }
+        }
+
+        public void SaveSettings()
+        {
+            AuthInstance.AuthSettings settings = new AuthInstance.AuthSettings();
+            settings.clientId = androidClientId;
+            settings.authServerUrl = authServerUrl;
+
+
+#if UNITY_ANDROID && !KINDLE_BUILD
+            // grab settings from disk
+            string json = JsonUtility.ToJson(settings);
+            string settingsFilename = "Assets/Resources/authSettings.json";
+            StreamWriter sw = new StreamWriter(settingsFilename);
+            sw.Write(json);
+            sw.Close();
+#endif
+
         }
     }
 }
