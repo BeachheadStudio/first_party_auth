@@ -8,20 +8,18 @@ namespace FPAuth
 {
     public class AndroidAuthManager : AAuthManager
     {
-        public AndroidAuthManager()
-        {
-            mStatus = Status.Init;
-        }
-
         public override void Init()
         {
+            string playerId = PlayerPrefs.GetString("FPAuth.PlayerId", null);
+
             Log(LogLevel.DEBUG, "starting...");
+            mStatus = Status.Working;
 
             using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
-                authService.Call("init", AuthInstance.Settings.clientId, AuthInstance.Settings.authServerUrl);
-                mStatus = Status.FirstPartyWorking;
+                authService.Call("init", AuthInstance.Settings.clientId, AuthInstance.Settings.authServerUrl, playerId);
+                mStatus = Status.Working;
             }
         }
 
@@ -121,28 +119,27 @@ namespace FPAuth
             }
         }
 
-        public override void FireFirstPartyAuthSuccess()
+        public override bool IsAnonymous()
         {
-            bool isAnonymous;
-            string firstPartyPlayerId = "", playerName = "", oauthToken = "";
-
             using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
-                isAnonymous = authService.Call<bool>("isAnonymous");
-
-                if (!isAnonymous)
-                {
-                    firstPartyPlayerId = authService.Call<string>("getPlayerId");
-                    playerName = authService.Call<string>("getPlayerName");
-                    oauthToken = authService.Call<string>("getSessionToken");
-                }
+                return authService.Call<bool>("IsAnonymous");
             }
+        }
+
+        public override void FireAuthSuccess()
+        {
+            bool isAnonymous = IsAnonymous();
+            string firstPartyPlayerId = FirstPartyPlayerId(), playerName = PlayerName(), sessionToken = SessionToken(), 
+            playerId = PlayerId();
 
             Log(LogLevel.DEBUG, string.Format("isAnonymous {0} firstPartyPlayerId {1} playerName {2} sessionToken {3}",
-                    isAnonymous, firstPartyPlayerId, playerName, oauthToken));
+                isAnonymous, firstPartyPlayerId, playerName, sessionToken));
 
-            base.FireFirstPartyAuthSuccess();
+            PlayerPrefs.SetString("FPAuth.PlayerId", playerId);
+
+            base.FireAuthSuccess();
         }
     }
 }

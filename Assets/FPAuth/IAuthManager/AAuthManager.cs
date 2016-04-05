@@ -17,22 +17,18 @@ namespace FPAuth
         }
 
         // event handlers
-        public static event Action FirstPartyAuthSuccess;
-        public static event Action<string> FirstPartyAuthFailure;
-        public static event Action FirstPartyAuthCancel;
-        public static event Action ServerAuthSuccess;
-        public static event Action<string> ServerAuthFailure;
+        public static event Action AuthSuccess;
+        public static event Action<string> AuthFailure;
+        public static event Action AuthCancel;
+        public static event Action PlayerChangeEvent;
 
         // parameters
         public enum Status
         {
-            Init,
-            FirstPartyWorking,
-            FirstPartySuccess,
-            FirstPartyFailure,
-            ServerWorking,
-            ServerSuccess,
-            ServerFailure
+            Working,
+            Success,
+            Cancel,
+            Failure
         }
 
         protected Status mStatus;
@@ -41,6 +37,11 @@ namespace FPAuth
         {
             get { return mStatus; }
             set { }
+        }
+
+        public bool IsAuthenticated()
+        {
+            return (mStatus == Status.Success || mStatus == Status.Cancel);
         }
 
         // methods
@@ -85,75 +86,51 @@ namespace FPAuth
             return null;
         }
 
-        public virtual void FireFirstPartyAuthSuccess()
+        public virtual bool IsAnonymous()
         {
-            mStatus = Status.FirstPartySuccess;
+            return false;
+        }
 
-            if (FirstPartyAuthSuccess != null)
+        public void FireAuthCancel()
+        {
+            mStatus = Status.Cancel;
+            if (AuthCancel != null)
             {
-                FirstPartyAuthSuccess();
+                AuthCancel();
             }
-            ClearFirstPartyEvents();
         }
 
-        public void FireFirstPartyAuthFailure(string error)
+        public virtual void FireAuthSuccess()
         {
-            mStatus = Status.FirstPartyFailure;
-            if (FirstPartyAuthFailure != null)
+            mStatus = Status.Success;
+            if (AuthSuccess != null)
             {
-                FirstPartyAuthFailure(error);
+                AuthSuccess();
             }
-            ClearFirstPartyEvents();
         }
 
-        public void FireFirstPartyAuthCancel()
+        public void FireAuthFailure(string error)
         {
-            mStatus = Status.FirstPartyFailure;
-            if (FirstPartyAuthCancel != null)
+            mStatus = Status.Failure;
+            if (AuthFailure != null)
             {
-                FirstPartyAuthCancel();
+                AuthFailure(error);
             }
-            ClearFirstPartyEvents();
         }
 
-        public void FireServerAuthSuccess()
+        public void FirePlayerChangeEvent()
         {
-            if (ServerAuthSuccess != null)
+            if(PlayerChangeEvent != null)
             {
-                ServerAuthSuccess();
+                PlayerChangeEvent();
             }
-            ClearServerEvents();
-        }
-
-        public void FireServerAuthFailure(string error)
-        {
-            if (ServerAuthFailure != null)
-            {
-                ServerAuthFailure(error);
-            }
-            ClearServerEvents();
-        }
-
-        protected void ClearFirstPartyEvents()
-        {
-            FirstPartyAuthSuccess = null;
-            FirstPartyAuthFailure = null;
-            FirstPartyAuthCancel = null;
-        }
-
-        protected void ClearServerEvents()
-        {
-            ServerAuthSuccess = null;
-            ServerAuthFailure = null;
         }
 
         protected void ClearEvents()
         {
-            FirstPartyAuthSuccess = null;
-            FirstPartyAuthFailure = null;
-            FirstPartyAuthCancel = null;
-            ServerAuthSuccess = null;
-            ServerAuthFailure = null;
+            AuthSuccess = null;
+            AuthFailure = null;
+            AuthCancel = null;
         }
     }
 }

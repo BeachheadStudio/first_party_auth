@@ -600,16 +600,12 @@ namespace FPAuth
             settings.clientId = androidClientId;
             settings.authServerUrl = authServerUrl;
 
-
-#if UNITY_ANDROID && !KINDLE_BUILD
             // grab settings from disk
             string json = JsonUtility.ToJson(settings);
             string settingsFilename = "Assets/Resources/authSettings.json";
             StreamWriter sw = new StreamWriter(settingsFilename);
             sw.Write(json);
             sw.Close();
-#endif
-
         }
     }
 }

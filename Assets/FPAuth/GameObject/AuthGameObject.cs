@@ -6,14 +6,6 @@ namespace FPAuth
 {
     public class AuthGameObject : MonoBehaviour
     {
-        public enum FPLoginStatus
-        {
-            Working,
-            Success,
-            Failure,
-            Cancel
-        }
-
         public static AuthGameObject Instance = null;
 
         void Awake()
@@ -26,7 +18,10 @@ namespace FPAuth
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            AuthInstance.Instance.Init();
+            if(!AuthInstance.Instance.IsAuthenticated())
+            {
+                AuthInstance.Instance.Init();
+            }
         }
 
         void OnDestroy()
@@ -37,11 +32,6 @@ namespace FPAuth
             }
                 
             Instance = null;
-        }
-
-        void Update()
-        {
-	
         }
 
         void OnApplicationPause(bool pauseStatus)
@@ -60,26 +50,35 @@ namespace FPAuth
         {
             if (bool.Parse(result))
             {
-                
+                AuthInstance.Instance.FirePlayerChangeEvent();
             }
         }
 
         void LoginResult(string result)
         {
-            FPLoginStatus status = (FPLoginStatus)Enum.Parse(typeof(FPLoginStatus), result, true);
+            AAuthManager.Status status = (AAuthManager.Status)Enum.Parse(typeof(AAuthManager.Status), result, true);
             
             switch (status)
             {
-                case FPLoginStatus.Success:
-                    AuthInstance.Instance.FireFirstPartyAuthSuccess();
+                case AAuthManager.Status.Success:
+                    AuthInstance.FailCount = 0;
+                    AuthInstance.Instance.FireAuthSuccess();
                     break;
-                case FPLoginStatus.Cancel:
-                    AuthInstance.Instance.FireFirstPartyAuthCancel();
+                case AAuthManager.Status.Cancel:
+                    AuthInstance.FailCount = 0;
+                    AuthInstance.Instance.FireAuthCancel();
                     break;
-                case FPLoginStatus.Failure:
-                    AuthInstance.Instance.FireFirstPartyAuthFailure(AuthInstance.Instance.FailureError());
+                case AAuthManager.Status.Failure:
+                    Debug.LogError("Auth Failed: " + AuthInstance.Instance.FailureError());
+                    if(AuthInstance.FailCount < 3) {
+                        AuthInstance.FailCount++;
+                        AuthInstance.Instance.Init();
+                    } else {
+                        AuthInstance.FailCount = 0;
+                        AuthInstance.Instance.FireAuthFailure(AuthInstance.Instance.FailureError());
+                    }
                     break;
-                case FPLoginStatus.Working:
+                case AAuthManager.Status.Working:
                 default:
                     Debug.Log("LoginResult returned working or garbage");
                     break;

@@ -13,15 +13,14 @@ namespace FPAuth
             public string authServerUrl;
         }
 
-        private static AAuthManager instance = null;
         private static AuthSettings settings = null;
-
         public static AuthSettings Settings
         {
             get { return settings; }
             set { }
         }
 
+        private static AAuthManager instance = null;
         public static AAuthManager Instance
         {
             get
@@ -36,6 +35,8 @@ namespace FPAuth
             private set { }
         }
 
+        public static int FailCount = 0;
+
         private static void Init()
         {
 #if UNITY_IOS  
@@ -44,14 +45,14 @@ namespace FPAuth
             instance = new AndroidAuthManager();
 #elif KINDLE_BUILD
             instance = new AmazonAuthManager();
+#elif UNITY_EDITOR
+            // TODO: add editor support
 #endif
 
-#if UNITY_ANDROID && !KINDLE_BUILD
             // grab settings from disk
             string settingsFilename = "authSettings";
             TextAsset jsonAsset = Resources.Load<TextAsset>(settingsFilename);
             settings = JsonUtility.FromJson<AuthSettings>(jsonAsset.text);
-#endif
         }
 
         public static void Log(AAuthManager.LogLevel level, String message, object[] args)

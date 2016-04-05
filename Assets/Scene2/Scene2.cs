@@ -20,16 +20,16 @@ public class Scene2 : MonoBehaviour
     {
         switch (AuthInstance.Instance.CurrentStatus)
         {
-            case AAuthManager.Status.FirstPartyWorking:
+            case AAuthManager.Status.Working:
                 header.text = "Starting First Party login...";
                 changeScene.gameObject.SetActive(true);
                 break;
-            case AAuthManager.Status.FirstPartySuccess:
+            case AAuthManager.Status.Success:
                 header.text = string.Format("First Party Gamer ID:\n {0}\nGamer Tag: {1}", AuthInstance.Instance.FirstPartyPlayerId(), 
                     AuthInstance.Instance.PlayerName());
                 changeScene.gameObject.SetActive(true);
                 break;
-            case AAuthManager.Status.FirstPartyFailure:
+            case AAuthManager.Status.Failure:
                 header.text = "First Party login failed. Check logs for reason.";
                 break;
             default:

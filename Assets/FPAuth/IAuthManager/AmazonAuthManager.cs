@@ -5,19 +5,14 @@ namespace FPAuth
 {
     public class AmazonAuthManager : AAuthManager
     {
-        public AmazonAuthManager()
-        {
-            mStatus = Status.Init;
-        }
-
         public override void Init()
         {
             Log(LogLevel.DEBUG, "starting...");
+            mStatus = Status.Working;
             using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.amazonauth.AuthService"))
             using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
             {
                 authService.Call("init", true, false, false);
-                mStatus = Status.FirstPartyWorking;
             }
         }
 
@@ -86,7 +81,7 @@ namespace FPAuth
             }
         }
 
-        public override void FireFirstPartyAuthSuccess()
+        public override void FireAuthSuccess()
         {
             bool isAnonymous;
             string firstPartyPlayerId = "", playerName = "", oauthToken = "";
@@ -107,7 +102,7 @@ namespace FPAuth
             Log(LogLevel.DEBUG, string.Format("isAnonymous {0} firstPartyPlayerId {1} playerName {2} oauthToken {3}",
                     isAnonymous, firstPartyPlayerId, playerName, oauthToken));
 
-            base.FireFirstPartyAuthSuccess();
+            base.FireAuthSuccess();
         }
     }
 }

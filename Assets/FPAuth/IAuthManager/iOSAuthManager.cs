@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace FPAuth
 {
@@ -12,7 +13,7 @@ namespace FPAuth
         private static extern void NativeLog(string message);
 
         [DllImport("__Internal")]
-        private static extern void AuthLocalPlayer(string serverUrl);
+        private static extern void AuthLocalPlayer(string serverUrl, string playerId);
 
         [DllImport("__Internal")]
         private static extern string GetPlayerName();
@@ -35,14 +36,16 @@ namespace FPAuth
         [DllImport("__Internal")]
         private static extern void NativeOnResume();
 
+        [DllImport("__Internal")]
+        private static extern bool NativeIsAnonymous();
 
         public override void Init()
         {
-            string domain = "http://192.168.1.154:8080/auth";
+            mStatus = Status.Working;
+            string playerId = PlayerPrefs.GetString("FPAuth.PlayerId", null);
 
-            Log(LogLevel.DEBUG, "Starting auth");
-
-            AuthLocalPlayer(domain);
+            Log(LogLevel.DEBUG, "Starting auth in thread");
+            AuthLocalPlayer(AuthInstance.Settings.authServerUrl, playerId);
         }
 
         public override string PlayerName()
@@ -80,20 +83,27 @@ namespace FPAuth
             NativeOnResume();
         }
 
+        public override bool IsAnonymous()
+        {
+            return NativeIsAnonymous();
+        }
+
         public override void Log(AAuthManager.LogLevel level, string message)
         {
             NativeLog(string.Format("{0}: {1}", level, message));
         }
 
-        public override void FireFirstPartyAuthSuccess()
+        public override void FireAuthSuccess()
         {
-            bool isAnonymous = false;
+            bool isAnonymous = IsAnonymous();
             string firstPartyPlayerId = FirstPartyPlayerId(), playerId = PlayerId(), playerName = PlayerName(), oauthToken = SessionToken();
 
             Log(LogLevel.DEBUG, string.Format("isAnonymous {0} firstPartyPlayerId {1} playerId {2} playerName {3} sessionToken {4}",
                     isAnonymous, firstPartyPlayerId, playerId, playerName, oauthToken));
 
-            base.FireFirstPartyAuthSuccess();
+            PlayerPrefs.SetString("FPAuth.PlayerId", playerId);
+
+            base.FireAuthSuccess();
         }
     }
 }

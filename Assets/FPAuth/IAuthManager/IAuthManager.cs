@@ -21,6 +21,10 @@ namespace FPAuth
 
         void OnResume();
 
+        bool IsAuthenticated();
+
+        bool IsAnonymous();
+
         void Log(AAuthManager.LogLevel level, string message);
     }
 }
