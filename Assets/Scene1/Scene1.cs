@@ -7,13 +7,22 @@ using FPAuth;
 
 public class Scene1 : MonoBehaviour
 {
-    public Text header;
-    public Button changeScene;
+    public Text playerId;
+    public Text serverPlayerId;
+    public Text gamerTag;
+    public Text isAnonymous;
+    public Text sessionToken;
+    public Text error;
+
+//    public Button changeScene;
 
     void Start()
     {
-        changeScene.gameObject.SetActive(false);
-        changeScene.onClick.AddListener(OnChangeScenePress);
+		playerId.text = "First Party Player Id:";
+        serverPlayerId.text = "Server Player Id:";
+        gamerTag.text = "Gamer Tag:";
+        isAnonymous.text = "Is Anonymous:";
+        sessionToken.text = "Session token:";
     }
 
     void Update()
@@ -21,16 +30,18 @@ public class Scene1 : MonoBehaviour
         switch (AuthInstance.Instance.CurrentStatus)
         {
             case AAuthManager.Status.Working:
-                header.text = "Starting First Party login...";
-                changeScene.gameObject.SetActive(true);
+                error.text = "Starting First Party login...";
                 break;
             case AAuthManager.Status.Success:
-                header.text = string.Format("First Party Gamer ID:\n {0}\nGamer Tag: {1}", AuthInstance.Instance.FirstPartyPlayerId(), 
-                    AuthInstance.Instance.PlayerName());
-                changeScene.gameObject.SetActive(true);
+            	playerId.text = string.Format("First Party Player Id: {0}", AuthInstance.Instance.FirstPartyPlayerId());
+                serverPlayerId.text = string.Format("Server Player Id: {0}", AuthInstance.Instance.PlayerId());
+                gamerTag.text = string.Format("Gamer Tag: {0}", AuthInstance.Instance.PlayerName());
+                isAnonymous.text = string.Format("Is Anonymous: {0}", AuthInstance.Instance.IsAnonymous());
+                sessionToken.text = string.Format("Session token: {0}", AuthInstance.Instance.SessionToken());
+
                 break;
             case AAuthManager.Status.Failure:
-                header.text = "First Party login failed. Check logs for reason.";
+            	error.text = string.Format("Error: {0}", AuthInstance.Instance.FailureError());
                 break;
             default:
                 break;
