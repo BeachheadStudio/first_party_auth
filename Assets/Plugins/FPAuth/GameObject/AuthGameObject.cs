@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using System.Threading;
 
 namespace FPAuth
 {
@@ -12,16 +13,32 @@ namespace FPAuth
         {
             if (Instance != null)
             {
-                Destroy(gameObject); // There can be only one 
+                Destroy(gameObject); // There can be only one
                 return;
             }
             Instance = this;
             DontDestroyOnLoad(gameObject);
+#if !UNITY_EDITOR && (UNITY_ANDROID && !KINDLE_BUILD)
+			AuthInstance.Instance.MainThread = Thread.CurrentThread;
+            AuthInstance.Instance.MainClass = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthInstance");
+#elif KINDLE_BUILD && !UNITY_EDITOR
+			AuthInstance.Instance.MainThread = Thread.CurrentThread;
+            AuthInstance.Instance.MainClass = new AndroidJavaClass("com.singlemalt.amazon.auth.amazonauth.AuthInstance");
+#endif // UNITY_ANDROID && !KINDLE_BUILD
+            
+        }
 
+        void Start()
+        {
             if(!AuthInstance.Instance.IsAuthenticated())
             {
                 AuthInstance.Instance.Init();
             }
+        }
+
+        void Update()
+        {
+
         }
 
         void OnDestroy()
@@ -30,7 +47,7 @@ namespace FPAuth
             {
                 return;
             }
-                
+
             Instance = null;
         }
 
@@ -39,9 +56,21 @@ namespace FPAuth
             if (pauseStatus)
             {
                 AuthInstance.Instance.OnPause();
+#if UNITY_ANDROID && !UNITY_EDITOR
+                AuthInstance.Instance.MainClass.Dispose();
+                AuthInstance.Instance.MainClass = null;
+                AuthInstance.Instance.MainThread = null;
+#endif
             }
             else
             {
+#if !UNITY_EDITOR && (UNITY_ANDROID && !KINDLE_BUILD)
+			AuthInstance.Instance.MainThread = Thread.CurrentThread;
+            AuthInstance.Instance.MainClass = new AndroidJavaClass("com.singlemalt.googleplay.auth.googleplayauth.AuthInstance");
+#elif KINDLE_BUILD && !UNITY_EDITOR
+			AuthInstance.Instance.MainThread = Thread.CurrentThread;
+            AuthInstance.Instance.MainClass = new AndroidJavaClass("com.singlemalt.amazon.auth.amazonauth.AuthInstance");
+#endif // UNITY_ANDROID && !KINDLE_BUILD
                 AuthInstance.Instance.OnResume();
             }
         }
@@ -57,7 +86,7 @@ namespace FPAuth
         void LoginResult(string result)
         {
             AAuthManager.Status status = (AAuthManager.Status)Enum.Parse(typeof(AAuthManager.Status), result, true);
-            
+
             switch (status)
             {
                 case AAuthManager.Status.Success:

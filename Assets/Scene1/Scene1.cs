@@ -15,6 +15,10 @@ public class Scene1 : MonoBehaviour
     public Text error;
 
 //    public Button changeScene;
+   
+    public bool workingFlag = false;
+    public bool successfulFlag = false;
+    public bool failureFlag = false;
 
     void Start()
     {
@@ -30,26 +34,34 @@ public class Scene1 : MonoBehaviour
         switch (AuthInstance.Instance.CurrentStatus)
         {
             case AAuthManager.Status.Working:
-                error.text = "Starting First Party login...";
+                if (!workingFlag)
+                {
+                    error.text = "Starting First Party login...";
+                    workingFlag = true;
+                }
                 break;
             case AAuthManager.Status.Success:
-            	playerId.text = string.Format("First Party Player Id: {0}", AuthInstance.Instance.FirstPartyPlayerId());
-                serverPlayerId.text = string.Format("Server Player Id: {0}", AuthInstance.Instance.PlayerId());
-                gamerTag.text = string.Format("Gamer Tag: {0}", AuthInstance.Instance.PlayerName());
-                isAnonymous.text = string.Format("Is Anonymous: {0}", AuthInstance.Instance.IsAnonymous());
-                sessionToken.text = string.Format("Session token: {0}", AuthInstance.Instance.SessionToken());
+                if (!successfulFlag)
+                {
+                    playerId.text = string.Format("First Party Player Id: {0}", AuthInstance.Instance.FirstPartyPlayerId());
+                    serverPlayerId.text = string.Format("Server Player Id: {0}", AuthInstance.Instance.PlayerId());
+                    gamerTag.text = string.Format("Gamer Tag: {0}", AuthInstance.Instance.PlayerName());
+                    isAnonymous.text = string.Format("Is Anonymous: {0}", AuthInstance.Instance.IsAnonymous());
+                    sessionToken.text = string.Format("Session token: {0}", AuthInstance.Instance.SessionToken());
+                    error.text = "Finished";
+                    successfulFlag = true;
+                }
 
                 break;
             case AAuthManager.Status.Failure:
-            	error.text = string.Format("Error: {0}", AuthInstance.Instance.FailureError());
+                if(!failureFlag)
+                {
+                    error.text = string.Format("Error: {0}", AuthInstance.Instance.FailureError());
+                    failureFlag = true;
+                }
                 break;
             default:
                 break;
         }
-    }
-
-    public void OnChangeScenePress()
-    {
-        SceneManager.LoadScene("Scene2");
     }
 }

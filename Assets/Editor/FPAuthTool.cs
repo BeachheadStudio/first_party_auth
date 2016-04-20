@@ -329,8 +329,7 @@ namespace FPAuth
 
             string[] scenes = new string[]
             { 
-                Application.dataPath + "/Scene1/Scene1.unity", 
-                Application.dataPath + "/Scene2/Scene2.unity" 
+                Application.dataPath + "/Scene1/Scene1.unity"
             };
 
             ResetDefineSymbols(platform);
@@ -606,6 +605,8 @@ namespace FPAuth
             StreamWriter sw = new StreamWriter(settingsFilename);
             sw.Write(json);
             sw.Close();
+
+            AssetDatabase.Refresh();
         }
     }
 }

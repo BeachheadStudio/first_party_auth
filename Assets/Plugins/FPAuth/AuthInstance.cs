@@ -39,16 +39,17 @@ namespace FPAuth
 
         private static void Init()
         {
-#if UNITY_IOS  
+#if UNITY_IOS && !UNITY_EDITOR
             instance = new iOSAuthManager();
-#elif UNITY_ANDROID && !KINDLE_BUILD
+#elif UNITY_ANDROID && !KINDLE_BUILD && !UNITY_EDITOR
             instance = new AndroidAuthManager();
-#elif KINDLE_BUILD
+#elif KINDLE_BUILD && !UNITY_EDITOR
             instance = new AmazonAuthManager();
 #elif UNITY_EDITOR
-            // TODO: add editor support
+            instance = new DevAuthManager();
+#else
+            Debug.LogError("Unsupported platform in AuthInstance::Init!");
 #endif
-
             // grab settings from disk
             string settingsFilename = "authSettings";
             TextAsset jsonAsset = Resources.Load<TextAsset>(settingsFilename);

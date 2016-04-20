@@ -1,56 +1,70 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Threading;
 
+#if KINDLE_BUILD && !UNITY_EDITOR
 namespace FPAuth
 {
     public class AmazonAuthManager : AAuthManager
     {
         public override void Init()
         {
-            Log(LogLevel.DEBUG, "starting...");
+            attachMainThread();
+            string playerId = PlayerPrefs.GetString(AAuthManager.PLAYER_ID_KEY, null);
+
             mStatus = Status.Working;
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.amazonauth.AuthService"))
-            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
             {
-                authService.Call("init", true, false, false);
+                    authService.Call("init", AuthInstance.Settings.authServerUrl, playerId, true, false, false);
             }
+            detachMainThread();
         }
 
         public override void OnPause()
         {
-            Log(LogLevel.DEBUG, "OnPause");
-            
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.amazonauth.AuthService"))
-            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
+            attachMainThread();
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
             {
                 authService.Call("onPause");
             }
+
+            detachMainThread();
         }
 
         public override void OnResume()
         {
-            Log(LogLevel.DEBUG, "OnResume");
+            attachMainThread();
 
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.amazonauth.AuthService"))
-            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
             {
                 authService.Call("onResume");
             }
+
+            detachMainThread();
         }
 
         public override string FailureError()
         {
-            Log(LogLevel.ERROR, "FailureError");
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.amazonauth.AuthService"))
-            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
-            {
-                return authService.Call<string>("getFailureError");
-            }
-        }
+            string failureError;
+            attachMainThread();
 
-        public override string SessionToken()
-        {
-            return "";
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                failureError = authService.Call<string>("getFailureError");
+            }
+
+            detachMainThread();
+            return failureError;
         }
 
         public override void Log(LogLevel level, string message)
@@ -60,49 +74,165 @@ namespace FPAuth
                 switch (level)
                 {
                     case LogLevel.DEBUG:
-                        logger.CallStatic<int>("d", "AmazonAuthManager", message);
+                        logger.CallStatic<int>("d", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.VERBOSE:
-                        logger.CallStatic<int>("v", "AmazonAuthManager", message);
+                        logger.CallStatic<int>("v", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.INFO:
-                        logger.CallStatic<int>("i", "AmazonAuthManager", message);
+                        logger.CallStatic<int>("i", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.WARN:
-                        logger.CallStatic<int>("w", "AmazonAuthManager", message);
+                        logger.CallStatic<int>("w", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.ERROR:
-                        logger.CallStatic<int>("e", "AmazonAuthManager", message);
+                        logger.CallStatic<int>("e", "GooglePlayAuthManager", message);
                         break;
                     case LogLevel.ASSERT:
-                        logger.CallStatic<int>("a", "AmazonAuthManager", message);
+                        logger.CallStatic<int>("a", "GooglePlayAuthManager", message);
                         break;
                 }
             }
+        }
+
+        public override string SessionToken()
+        {
+            string sessionToken;
+            attachMainThread();
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                sessionToken = authService.Call<string>("getSessionToken");
+            }
+
+            detachMainThread();
+            return sessionToken;
+        }
+
+        public override string PlayerName()
+        {
+            string playerName;
+            attachMainThread();
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                playerName = authService.Call<string>("getPlayerName");
+            }
+
+            detachMainThread();
+            return playerName;
+        }
+
+        public override string PlayerId()
+        {
+            string playerId;
+            attachMainThread();
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                playerId = authService.Call<string>("getServerPlayerId");
+            }
+
+            detachMainThread();
+            return playerId;
+        }
+
+        public override string FirstPartyPlayerId()
+        {
+            string firstPartyPlayerId;
+            attachMainThread();
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                firstPartyPlayerId = authService.Call<string>("getPlayerId");
+            }
+
+            detachMainThread();
+            return firstPartyPlayerId;
+        }
+
+        public override bool IsAnonymous()
+        {
+            bool anonymous;
+            attachMainThread();
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                anonymous = authService.Call<bool>("isAnonymous");
+            }
+
+            detachMainThread();
+            return anonymous;
+        }
+
+        public override Dictionary<string, string> GetAuthParams()
+        {
+            string authParams;
+            attachMainThread();
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                authParams = authService.Call<string>("getAuthParams");
+            }
+
+            detachMainThread();
+            return JsonUtility.FromJson<Dictionary<string, string>>(authParams);
+        }
+
+        public override void AwardAchievement(string achievementId)
+        {
+            attachMainThread();
+
+            using (
+                AndroidJavaObject authService =
+                    AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
+            {
+                authService.Call("awardAchievement", achievementId);
+            }
+
+            detachMainThread();
         }
 
         public override void FireAuthSuccess()
         {
-            bool isAnonymous;
-            string firstPartyPlayerId = "", playerName = "", oauthToken = "";
 
-            using (AndroidJavaClass clazz = new AndroidJavaClass("com.singlemalt.amazon.auth.amazonauth.AuthService"))
-            using (AndroidJavaObject authService = clazz.CallStatic<AndroidJavaObject>("getInstance"))
-            {
-                isAnonymous = authService.Call<bool>("isAnonymous");
+            Debug.Log(string.Format("isAnonymous {0} firstPartyPlayerId {1} playerName {2} sessionToken {3}",
+                    IsAnonymous(), FirstPartyPlayerId(), PlayerName(), SessionToken()));
 
-                if (!isAnonymous)
-                {
-                    firstPartyPlayerId = authService.Call<string>("getPlayerId");
-                    playerName = authService.Call<string>("getPlayerName");
-                    oauthToken = authService.Call<string>("getOauthToken");
-                }
-            }
-
-            Log(LogLevel.DEBUG, string.Format("isAnonymous {0} firstPartyPlayerId {1} playerName {2} oauthToken {3}",
-                    isAnonymous, firstPartyPlayerId, playerName, oauthToken));
+            PlayerPrefs.SetString(AAuthManager.PLAYER_ID_KEY, PlayerId());
 
             base.FireAuthSuccess();
         }
+
+        private void attachMainThread()
+        {
+            if (mainThread != Thread.CurrentThread)
+            {
+                Debug.Log("calling AttachCurrentThread()");
+                AndroidJNI.AttachCurrentThread();
+            }
+        }
+
+        private void detachMainThread()
+        {
+            if (mainThread != Thread.CurrentThread)
+            {
+                Debug.Log("calling DetachCurrentThread()");
+                AndroidJNI.DetachCurrentThread();
+            }
+        }
     }
 }
+#endif

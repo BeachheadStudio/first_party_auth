@@ -1,10 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using UnityEngine;
 
 namespace FPAuth
 {
     public abstract class AAuthManager : IAuthManager
     {
+#if UNITY_ANDROID
+        // Thread reference for JNI calls
+        protected Thread mainThread;
+        public Thread MainThread
+        {
+            get { return mainThread; }
+            set { mainThread = value;}
+        }
+
+        protected AndroidJavaClass mainClass;
+
+        public AndroidJavaClass MainClass
+        {
+            get { return mainClass; }
+            set { mainClass = value; }
+        }
+#endif
+        public static readonly string PLAYER_ID_KEY = "FPAuth.PlayerId";
+
         // log level enum
         public enum LogLevel
         {
@@ -17,10 +38,10 @@ namespace FPAuth
         }
 
         // event handlers
-        public static event Action AuthSuccess;
-        public static event Action<string> AuthFailure;
-        public static event Action AuthCancel;
-        public static event Action PlayerChangeEvent;
+        public event Action AuthSuccess;
+        public event Action<string> AuthFailure;
+        public event Action AuthCancel;
+        public event Action PlayerChangeEvent;
 
         // parameters
         public enum Status
@@ -47,48 +68,62 @@ namespace FPAuth
         // methods
         public virtual void Init()
         {
+            throw new Exception("Not Implemented");
         }
 
         public virtual void OnPause()
         {
+            throw new Exception("Not Implemented");
         }
 
         public virtual void OnResume()
         {
+            throw new Exception("Not Implemented");
         }
 
         public virtual string FailureError()
         {
-            return null;
+            throw new Exception("Not Implemented");
         }
 
         public virtual void Log(AAuthManager.LogLevel level, string message)
-        {   
+        {
+            throw new Exception("Not Implemented");
         }
 
         public virtual string PlayerName()
         {
-            return null;
+            throw new Exception("Not Implemented");
         }
 
         public virtual string PlayerId()
         {
-            return null;
+            throw new Exception("Not Implemented");
         }
 
         public virtual string FirstPartyPlayerId()
         {
-            return null;
+            throw new Exception("Not Implemented");
         }
 
         public virtual string SessionToken()
         {
-            return null;
+            throw new Exception("Not Implemented");
         }
 
         public virtual bool IsAnonymous()
         {
-            return false;
+            throw new Exception("Not Implemented");
+        }
+
+        public virtual Dictionary<string, string> GetAuthParams()
+        {
+            throw new Exception("Not Implemented");
+        }
+
+        public virtual void AwardAchievement(string achievementId)
+        {
+            throw new Exception("Not Implemented");
         }
 
         public void FireAuthCancel()
@@ -132,5 +167,12 @@ namespace FPAuth
             AuthFailure = null;
             AuthCancel = null;
         }
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        protected bool IsMainThread()
+        {
+        return mainThread == Thread.CurrentThread;
+        }
+#endif
     }
 }

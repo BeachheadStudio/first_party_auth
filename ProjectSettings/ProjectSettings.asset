@@ -158,7 +158,7 @@ PlayerSettings:
   AndroidTargetDevice: 0
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: /Users/kmiller/Perforce/kmiller_new_auth_workflow/External/Android_keystore/user.keystore
+  AndroidKeystoreName: /Users/kmiller/Perforce/kmiller_new_auth_workflow_mbp/External/Android_keystore/user.keystore
   AndroidKeyaliasName: skybc
   AndroidTVCompatibility: 0
   AndroidIsGame: 1
@@ -334,8 +334,8 @@ PlayerSettings:
   psmSplashimage: {fileID: 0}
   spritePackerPolicy: 
   scriptingDefineSymbols:
-    4: DEVELOPER_TOOLS
-    7: DEVELOPER_TOOLS
+    4: 
+    7: DEVELOPER_TOOLS;KINDLE_BUILD
   metroPackageName: first_party_auth
   metroPackageVersion: 
   metroCertificatePath: 

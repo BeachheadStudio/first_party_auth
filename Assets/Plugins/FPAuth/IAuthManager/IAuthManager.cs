@@ -25,6 +25,10 @@ namespace FPAuth
 
         bool IsAnonymous();
 
+        Dictionary<string, string> GetAuthParams();
+
+        void AwardAchievement(string achievementId);
+
         void Log(AAuthManager.LogLevel level, string message);
     }
 }
