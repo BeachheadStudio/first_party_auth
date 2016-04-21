@@ -28,13 +28,15 @@ public class PostBuildProcessor {
 
         File.WriteAllText(pbxProjFilePath, proj.WriteToString());
 
-        /*
-            PlistDocument
-            <key>UIRequiredDeviceCapabilities</key>
-            <array>
-                <string>armv7</string>
-                <string>gamekit</string>
-            </array>
-        */
+        string plistFile = string.Join(Path.DirectorySeparatorChar.ToString(), new string[2] { path, "Info.plist" });
+        PlistDocument plist = new PlistDocument();
+        plist.ReadFromString(File.ReadAllText(plistFile));  
+        PlistElementDict rootDict = plist.root;
+
+        PlistElementArray plistArr = rootDict.CreateArray("UIRequiredDeviceCapabilities");
+        plistArr.AddString("armv7");
+        plistArr.AddString("gamekit");
+
+        File.WriteAllText(plistFile, plist.WriteToString());
     }
 }

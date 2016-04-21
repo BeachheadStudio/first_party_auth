@@ -18,7 +18,7 @@ namespace FPAuth
             
             using (AndroidJavaObject authService = AuthInstance.Instance.MainClass.CallStatic<AndroidJavaObject>("getInstance"))
             {
-                authService.Call("init", AuthInstance.Settings.clientId, AuthInstance.GetPlayerPrefsEnvironment() + "/auth", playerId);
+                authService.Call("init", AuthInstance.Settings.clientId, AuthInstance.Settings.authServerUrl, playerId);
             }
             detachMainThread();
         }
@@ -63,7 +63,6 @@ namespace FPAuth
 
         public override void Log(LogLevel level, string message)
         {
-            Assert.That(IsMainThread(), "Log must be called from main thread");
             using (AndroidJavaClass logger = new AndroidJavaClass("android.util.Log"))
             {
                 switch (level)

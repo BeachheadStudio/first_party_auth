@@ -5,6 +5,7 @@ using System.IO;
 using System;
 using System.Diagnostics;
 using System.Xml;
+using UnityEditor.AnimatedValues;
 
 namespace FPAuth
 {
@@ -43,6 +44,15 @@ namespace FPAuth
         string androidAppId;
         string androidClientId;
         string authServerUrl;
+        string androidKeyLocation;
+        string androidKeyPassword;
+        string amazonKeyLocation;
+        string amazonKeyPassword;
+        string androidAliasName;
+        string androidAliasPassword;
+        string amazonAliasName;
+        string amazonAliasPassword;
+        AnimBool useAndroidKeyForAmazon = new AnimBool(false);
 
         public enum Platform
         {
@@ -55,8 +65,8 @@ namespace FPAuth
         [MenuItem("Window/FPAuth")]
         public static void  ShowWindow()
         {
-            EditorWindow window = EditorWindow.GetWindow(typeof(FPAuthTool));
-            window.maxSize = new Vector2(500f, 500f);
+            EditorWindow window = EditorWindow.GetWindow(typeof(FPAuthTool), false, "FPAuthTool", true);
+            window.maxSize = new Vector2(500f, 705f);
             window.minSize = window.maxSize;
         }
 
@@ -84,19 +94,97 @@ namespace FPAuth
         {
             EditorStyles.textField.wordWrap = true;
 
+            // Main
             GUILayout.Label("FPAuthTool Settings", EditorStyles.boldLabel);
+            EditorGUILayout.Space();
             bundleId = EditorGUILayout.TextField("Bundle Identifier", bundleId);
+            buildPlugins = EditorGUILayout.Toggle("Build plugins from src", buildPlugins);
+            debugBuild = EditorGUILayout.Toggle("Debug Build", debugBuild);
+            EditorGUILayout.BeginHorizontal();
+            outputLocation = EditorGUILayout.TextField("Output Location", outputLocation);
+            GUI.SetNextControlName("Browse");
+            if (GUILayout.Button("Browse"))
+            {
+                outputLocation = EditorUtility.SaveFolderPanel("Select Location", outputLocation, "Builds");
+                GUI.FocusControl("Browse");
+            }
+            EditorGUILayout.EndHorizontal();
+
+            // Android
+            EditorGUILayout.Space();
+            GUILayout.Label("Android Settings", EditorStyles.boldLabel);
             androidHome = EditorGUILayout.TextField("Android SDK Location", androidHome);
             androidAppId = EditorGUILayout.TextField("Android App ID", androidAppId);
             androidClientId = EditorGUILayout.TextField("Android Client ID", androidClientId);
-            authServerUrl = EditorGUILayout.TextField("Auth Server Url", authServerUrl);
+            EditorGUILayout.BeginHorizontal();
+            androidKeyLocation = EditorGUILayout.TextField("Android Key File", androidKeyLocation);
+            GUI.SetNextControlName("Browse");
+            if (GUILayout.Button("Browse"))
+            {
+                androidKeyLocation = EditorUtility.OpenFilePanel("Select Location", androidKeyLocation, "keystore");
+                GUI.FocusControl("Browse");
+            }
+            EditorGUILayout.EndHorizontal();
+            androidKeyPassword = EditorGUILayout.PasswordField("Android Key Password", androidKeyPassword);
+            androidAliasName = EditorGUILayout.TextField("Android Alias", androidAliasName);
+            androidAliasPassword = EditorGUILayout.PasswordField("Android Alias Password", androidAliasPassword);
+
+            // Amazon
+            EditorGUILayout.Space();
+            GUILayout.Label("Amazon Settings", EditorStyles.boldLabel);
             amazonAPIKey = EditorGUILayout.TextField("Amazon API Key", amazonAPIKey, GUILayout.Height(200));
-            buildPlugins = EditorGUILayout.Toggle("Build plugins from src", buildPlugins);
+            useAndroidKeyForAmazon.target = EditorGUILayout.Toggle("Use Amazon Keystore", useAndroidKeyForAmazon.target);
+            if (EditorGUILayout.BeginFadeGroup(useAndroidKeyForAmazon.faded))
+            {
+                this.maxSize = new Vector2(500f, 773f);
+                this.minSize = this.maxSize;
+                EditorGUILayout.BeginHorizontal();
+                amazonKeyLocation = EditorGUILayout.TextField("Amazon Key File", amazonKeyLocation);
+                GUI.SetNextControlName("Browse");
+                if (GUILayout.Button("Browse"))
+                {
+                    amazonKeyLocation = EditorUtility.OpenFilePanel("Select Location", amazonKeyLocation, "keystore");
+                    GUI.FocusControl("Browse");
+                }
+                EditorGUILayout.EndHorizontal();
+
+                amazonKeyPassword = EditorGUILayout.PasswordField("Amazon Key Password", amazonKeyPassword);
+                amazonAliasName = EditorGUILayout.TextField("Amazon Alias", amazonAliasName);
+                amazonAliasPassword = EditorGUILayout.PasswordField("Amazon Alias Password", amazonAliasPassword);
+            } else {
+                this.maxSize = new Vector2(500f, 705f);
+                this.minSize = this.maxSize;
+            }
+            EditorGUILayout.EndFadeGroup();
+
+            // Auth server
+            EditorGUILayout.Space();
+            GUILayout.Label("Server Settings", EditorStyles.boldLabel);
+            authServerUrl = EditorGUILayout.TextField("Auth Server Url", authServerUrl);
+            EditorGUILayout.Space();
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Launch Server", GUILayout.Width(200)))
+            {
+                // TODO: launch 
+            }
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+
+            // Build
+            EditorGUILayout.Space();
+            GUILayout.Label("Build", EditorStyles.boldLabel);
+            GUIContent label = new GUIContent();
+            label.text = "Platform";
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel(label);
+            platform = (Platform)EditorGUILayout.EnumPopup(platform, GUILayout.Width(150));
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
-            GUILayout.BeginArea(new Rect(153, 338, 200, 100));
-            if (GUILayout.Button("Setup", GUILayout.Width(200)))
+            if (GUILayout.Button("Setup Plugins", GUILayout.Width(200)))
             {
+                //TODO: update
                 if (string.IsNullOrEmpty(bundleId) || string.IsNullOrEmpty(androidHome) ||
                     string.IsNullOrEmpty(amazonAPIKey) || string.IsNullOrEmpty(androidClientId) ||
                     string.IsNullOrEmpty(authServerUrl))
@@ -108,39 +196,13 @@ namespace FPAuth
                     BuildProject();
                 }
             }
-            GUILayout.EndArea();
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            EditorGUILayout.Separator();
-
-            debugBuild = EditorGUILayout.Toggle("Debug Build", debugBuild);
-            GUIContent label = new GUIContent();
-            label.text = "Platform";
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PrefixLabel(label);
-            platform = (Platform)EditorGUILayout.EnumPopup(platform, GUILayout.Width(150));
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            outputLocation = EditorGUILayout.TextField("Output Location", outputLocation);
-            GUI.SetNextControlName("Browse");
-            if (GUILayout.Button("Browse"))
+            if (GUILayout.Button("Build", GUILayout.Width(200)))
             {
-                outputLocation = EditorUtility.SaveFolderPanel("Select Location", outputLocation, "Builds");
-                GUI.FocusControl("Browse");
+                if(platform != Platform.None && !string.IsNullOrEmpty(outputLocation))
+                {
+                    BuildGame(platform);
+                }
             }
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            GUILayout.BeginArea(new Rect(153, 430, 200, 100));
-            if (GUILayout.Button("Build", GUILayout.Width(200)) && platform != Platform.None && !string.IsNullOrEmpty(outputLocation))
-            {
-                BuildGame(platform);
-            }
-            GUILayout.EndArea();
         }
 
         private void BuildProject()
@@ -326,12 +388,16 @@ namespace FPAuth
             UnityEngine.Debug.Log("Starting...");
 
             PlayerSettings.bundleIdentifier = bundleId;
+            PlayerSettings.Android.keystoreName = androidKeyLocation;
+            PlayerSettings.Android.keystorePass = androidKeyPassword;
+            PlayerSettings.Android.keyaliasName = androidAliasName;
+            PlayerSettings.Android.keyaliasPass = androidAliasPassword;
 
             string[] scenes = new string[]
             { 
                 Application.dataPath + "/Scene1/Scene1.unity"
             };
-
+            
             ResetDefineSymbols(platform);
 
             if (debugBuild)
@@ -349,12 +415,32 @@ namespace FPAuth
                     break;
                 case Platform.Kindle:
                     AddDefineSymbol(DEFINE_SYMBOLS[1], platform);
+
+                    if(useAndroidKeyForAmazon.target)
+                    {
+                        PlayerSettings.Android.keystoreName = amazonKeyLocation;
+                        PlayerSettings.Android.keystorePass = amazonKeyPassword;
+                        PlayerSettings.Android.keyaliasName = amazonAliasName;
+                        PlayerSettings.Android.keyaliasPass = amazonAliasPassword;
+                    }
+
                     break;
+            }
+
+            if(platform != Platform.iOS)
+            {
+                
+                UnityEngine.Debug.Log(string.Format("Using key {0} and alias {1}", PlayerSettings.Android.keystoreName, PlayerSettings.Android.keyaliasName));
             }
 
             BuildPlayer(scenes, platform);
 
+            UnityEngine.Debug.Log("Clearing PlayerSettings...");
             PlayerSettings.bundleIdentifier = "";
+            PlayerSettings.Android.keyaliasName = "";
+            PlayerSettings.Android.keystoreName = "";
+
+            EditorApplication.SaveAssets();
 
             UnityEngine.Debug.Log("Finished!");
         }
@@ -410,6 +496,51 @@ namespace FPAuth
             {
                 authServerUrl = EditorPrefs.GetString("FPAuthTool.authServerUrl");
             }
+
+            if (androidKeyLocation == null && EditorPrefs.HasKey("FPAuthTool.androidKeyLocation"))
+            {
+                androidKeyLocation = EditorPrefs.GetString("FPAuthTool.androidKeyLocation");
+            }
+
+            if (androidKeyPassword == null && EditorPrefs.HasKey("FPAuthTool.androidKeyPassword"))
+            {
+                androidKeyPassword = EditorPrefs.GetString("FPAuthTool.androidKeyPassword");
+            }
+
+            if (amazonKeyLocation == null && EditorPrefs.HasKey("FPAuthTool.amazonKeyLocation"))
+            {
+                amazonKeyLocation = EditorPrefs.GetString("FPAuthTool.amazonKeyLocation");
+            }
+
+            if (amazonKeyPassword == null && EditorPrefs.HasKey("FPAuthTool.amazonKeyPassword"))
+            {
+                amazonKeyPassword = EditorPrefs.GetString("FPAuthTool.amazonKeyPassword");
+            }
+
+            if (androidAliasName == null && EditorPrefs.HasKey("FPAuthTool.androidAliasName"))
+            {
+                androidAliasName = EditorPrefs.GetString("FPAuthTool.androidAliasName");
+            }
+
+            if (androidAliasPassword == null && EditorPrefs.HasKey("FPAuthTool.androidAliasPassword"))
+            {
+                androidAliasPassword = EditorPrefs.GetString("FPAuthTool.androidAliasPassword");
+            }
+
+            if (amazonAliasName == null && EditorPrefs.HasKey("FPAuthTool.amazonAliasName"))
+            {
+                amazonAliasName = EditorPrefs.GetString("FPAuthTool.amazonAliasName");
+            }
+
+            if (amazonAliasPassword == null && EditorPrefs.HasKey("FPAuthTool.amazonAliasPassword"))
+            {
+                amazonAliasPassword = EditorPrefs.GetString("FPAuthTool.amazonAliasPassword");
+            }
+
+            if (EditorPrefs.HasKey("FPAuthTool.useAndroidKeyForAmazon"))
+            {
+                useAndroidKeyForAmazon = new AnimBool(EditorPrefs.GetBool("FPAuthTool.useAndroidKeyForAmazon"));
+            }
         }
 
         public void OnDisable()
@@ -457,6 +588,48 @@ namespace FPAuth
             {
                 EditorPrefs.SetString("FPAuthTool.authServerUrl", authServerUrl);
             }
+
+            if (androidKeyLocation != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.androidKeyLocation", androidKeyLocation);
+            }
+
+            if (androidKeyPassword != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.androidKeyPassword", androidKeyPassword);
+            }
+
+            if (amazonKeyLocation != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.amazonKeyLocation", amazonKeyLocation);
+            }
+
+            if (androidAliasName != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.androidAliasName", androidAliasName);
+            }
+
+            if (androidAliasPassword != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.androidAliasPassword", androidAliasPassword);
+            }
+
+            if (amazonKeyPassword != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.amazonKeyPassword", amazonKeyPassword);
+            }
+
+            if (amazonAliasName != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.amazonAliasName", amazonAliasName);
+            }
+
+            if (amazonAliasPassword != null)
+            {
+                EditorPrefs.SetString("FPAuthTool.amazonAliasPassword", amazonAliasPassword);
+            }
+
+            EditorPrefs.SetBool("FPAuthTool.useAndroidKeyForAmazon", useAndroidKeyForAmazon.target);
         }
 
         private void ResetDefineSymbols(Platform platform)
@@ -534,16 +707,8 @@ namespace FPAuth
                 buildOptions |= BuildOptions.AllowDebugging;
             }
 
-            bool previousAPKExpansionSetting = false;
-            bool resetCurrentAPKExpansionSetting = false;
-            if (platform == Platform.Android)
-            {
-                previousAPKExpansionSetting = PlayerSettings.Android.useAPKExpansionFiles;
-                resetCurrentAPKExpansionSetting = true;
-
-                //TODO: add toggle
-                PlayerSettings.Android.useAPKExpansionFiles = false;
-            }
+            //TODO: add toggle
+            PlayerSettings.Android.useAPKExpansionFiles = false;
 
             string updatedOutputLocation = outputLocation + "/" + platform.ToString();
 
@@ -568,11 +733,6 @@ namespace FPAuth
             UnityEngine.Debug.Log(string.Format("Define symbols set to {0}", PlayerSettings.GetScriptingDefineSymbolsForGroup(btg)));
 
             string error = BuildPipeline.BuildPlayer(scenes, updatedOutputLocation, GetBuildTargetFromPlatform(platform), buildOptions);
-
-            if (resetCurrentAPKExpansionSetting)
-            {
-                PlayerSettings.Android.useAPKExpansionFiles = previousAPKExpansionSetting;
-            }
 
             if (!string.IsNullOrEmpty(error))
             {
